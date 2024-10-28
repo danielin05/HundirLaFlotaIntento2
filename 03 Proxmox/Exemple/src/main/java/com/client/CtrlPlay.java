@@ -108,6 +108,33 @@ public class CtrlPlay implements Initializable {
         selectedObject = "";
         mouseDragging = false;
     
+
+        int col = grid.getCol(mouseX);
+        int row = grid.getRow(mouseY);
+
+        
+        System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
+
+        // Verificar si hay un barco del otro cliente en esta casilla
+        for (String objectId : selectableObjects.keySet()) {
+            JSONObject obj = selectableObjects.get(objectId);
+            String player = obj.getString("player");
+
+            // Solo verifica objetos que pertenecen al otro cliente
+            if (!player.equals(this.clientId)) {
+                int objCol = obj.getInt("col");
+                int objRow = obj.getInt("row");
+                int cols = obj.getInt("cols");
+                int rows = obj.getInt("rows");
+
+                // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
+                if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
+                    System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
+                    break;
+                }
+            }
+        }
+
         // Iterar sobre selectableObjects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject obj = selectableObjects.get(objectId);
@@ -198,7 +225,7 @@ public class CtrlPlay implements Initializable {
     // Método para verificar la superposición
     private boolean isOverlapping(int startCol, int startRow, int cols, int rows, String currentObjectId) {
         for (String objectId : selectableObjects.keySet()) {
-            if (!objectId.equals(currentObjectId)) {
+            if (!objectId.equals(currentObjectId) && selectableObjects.get(objectId).getString("player").equals(clientId)) {
                 JSONObject otherObj = selectableObjects.get(objectId);
                 
                 // Verificar que 'col' y 'row' existan en el objeto
