@@ -108,6 +108,7 @@ public class Main extends Application {
             case "clients":
                 if (clientId == "") {
                     clientId = msgObj.getString("id");
+                    CtrlPlay.setClientId(clientId);  // Asignar el clientId a CtrlPlay
                 }
                 if (UtilsViews.getActiveView() != "ViewWait") {
                     UtilsViews.setViewAnimating("ViewWait");

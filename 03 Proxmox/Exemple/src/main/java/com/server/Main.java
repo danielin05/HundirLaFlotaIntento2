@@ -269,24 +269,128 @@ public class Main extends WebSocketServer {
         LineReader reader = LineReaderBuilder.builder().build();
         System.out.println("Server running. Type 'exit' to gracefully stop it.");
 
-        // Add objects
-        String name0 = "O0";
+        // Add objects Player1
+        String name0 = "A0";
         JSONObject obj0 = new JSONObject();
         obj0.put("objectId", name0);
         obj0.put("x", 300);
         obj0.put("y", 50);
+        obj0.put("initialX", 300);
+        obj0.put("initialY", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
+        obj0.put("player", "A");
         selectableObjects.put(name0, obj0);
 
-        String name1 = "O1";
+        String name1 = "A1";
         JSONObject obj1 = new JSONObject();
         obj1.put("objectId", name1);
         obj1.put("x", 300);
         obj1.put("y", 100);
-        obj1.put("cols", 1);
-        obj1.put("rows", 3);
+        obj1.put("initialX", 300);
+        obj1.put("initialY", 100);
+        obj1.put("cols", 3);
+        obj1.put("rows", 1);
+        obj1.put("player", "A");
         selectableObjects.put(name1, obj1);
+
+        String name2 = "A2";
+        JSONObject obj2 = new JSONObject();
+        obj2.put("objectId", name2);
+        obj2.put("x", 300);
+        obj2.put("y", 150);
+        obj2.put("initialX", 300);
+        obj2.put("initialY", 150);
+        obj2.put("cols", 1);
+        obj2.put("rows", 2);
+        obj2.put("player", "A");
+        selectableObjects.put(name2, obj2);
+
+        String name3 = "A3";
+        JSONObject obj3 = new JSONObject();
+        obj3.put("objectId", name3);
+        obj3.put("x", 350);
+        obj3.put("y", 150);
+        obj3.put("initialX", 350);
+        obj3.put("initialY", 150);
+        obj3.put("cols", 1);
+        obj3.put("rows", 3);
+        obj3.put("player", "A");
+        selectableObjects.put(name3, obj3);
+
+        String name4 = "A4";
+        JSONObject obj4 = new JSONObject();
+        obj4.put("objectId", name4);
+        obj4.put("x", 400);
+        obj4.put("y", 150);
+        obj4.put("initialX", 400);
+        obj4.put("initialY", 150);
+        obj4.put("cols", 1);
+        obj4.put("rows", 5);
+        obj4.put("player", "A");
+        selectableObjects.put(name4, obj4);
+
+        // Add objects Player2
+        String name5 = "B5";
+        JSONObject obj5 = new JSONObject();
+        obj5.put("objectId", name5);
+        obj5.put("x", 300);
+        obj5.put("y", 50);
+        obj5.put("initialX", 300);
+        obj5.put("initialY", 50);
+        obj5.put("cols", 4);
+        obj5.put("rows", 1);
+        obj5.put("player", "B");
+        selectableObjects.put(name5, obj5);
+
+        String name6 = "B6";
+        JSONObject obj6 = new JSONObject();
+        obj6.put("objectId", name6);
+        obj6.put("x", 300);
+        obj6.put("y", 100);
+        obj6.put("initialX", 300);
+        obj6.put("initialY", 100);
+        obj6.put("cols", 3);
+        obj6.put("rows", 1);
+        obj6.put("player", "B");
+        selectableObjects.put(name6, obj6);
+
+        String name7 = "B7";
+        JSONObject obj7 = new JSONObject();
+        obj7.put("objectId", name7);
+        obj7.put("x", 300);
+        obj7.put("y", 150);
+        obj7.put("initialX", 300);
+        obj7.put("initialY", 150);
+        obj7.put("cols", 1);
+        obj7.put("rows", 2);
+        obj7.put("player", "B");
+        selectableObjects.put(name7, obj7);
+
+        String name8 = "B8";
+        JSONObject obj8 = new JSONObject();
+        obj8.put("objectId", name8);
+        obj8.put("x", 350);
+        obj8.put("y", 150);
+        obj8.put("initialX", 350);
+        obj8.put("initialY", 150);
+        obj8.put("cols", 1);
+        obj8.put("rows", 3);
+        obj8.put("player", "B");
+        selectableObjects.put(name8, obj8);
+
+        String name9 = "B9";
+        JSONObject obj9 = new JSONObject();
+        obj9.put("objectId", name9);
+        obj9.put("x", 400);
+        obj9.put("y", 150);
+        obj9.put("initialX", 400);
+        obj9.put("initialY", 150);
+        obj9.put("cols", 1);
+        obj9.put("rows", 5);
+        obj9.put("player", "B");
+        selectableObjects.put(name9, obj9);
+
 
         try {
             while (true) {

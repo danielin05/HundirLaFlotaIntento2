@@ -30,6 +30,7 @@ public class CtrlPlay implements Initializable {
 
     public static Map<String, JSONObject> selectableObjects = new HashMap<>();
     private String selectedObject = "";
+    private static String clientId;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -98,29 +99,40 @@ public class CtrlPlay implements Initializable {
         }
     }
 
-    private void onMousePressed(MouseEvent event) {
 
+    private int initialX, initialY;
+    private void onMousePressed(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
-
+    
         selectedObject = "";
         mouseDragging = false;
-
+    
+        // Iterar sobre selectableObjects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject obj = selectableObjects.get(objectId);
             int objX = obj.getInt("x");
             int objY = obj.getInt("y");
             int cols = obj.getInt("cols");
             int rows = obj.getInt("rows");
+            initialX = obj.getInt("initialX");
+            initialY = obj.getInt("initialY");
 
             if (isPositionInsideObject(mouseX, mouseY, objX, objY,  cols, rows)) {
-                selectedObject = objectId;
-                mouseDragging = true;
-                mouseOffsetX = event.getX() - objX;
-                mouseOffsetY = event.getY() - objY;
-                break;
+                if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
+                    selectedObject = objectId;
+                    mouseDragging = true;
+                    mouseOffsetX = event.getX() - objX;
+                    mouseOffsetY = event.getY() - objY;
+                    break;
+                }
             }
         }
+    }
+
+
+    public static void setClientId(String clientId) {
+        CtrlPlay.clientId = clientId;
     }
 
     private void onMouseDragged(MouseEvent event) {
@@ -146,27 +158,71 @@ public class CtrlPlay implements Initializable {
     }
 
     private void onMouseReleased(MouseEvent event) {
-        if (selectedObject != "") {
+        if (!selectedObject.isEmpty()) {
             JSONObject obj = selectableObjects.get(selectedObject);
             int objCol = obj.getInt("col");
             int objRow = obj.getInt("row");
-
-            if (objCol != -1 && objRow != -1) {
+            int cols = obj.getInt("cols");
+            int rows = obj.getInt("rows");
+    
+            if (isCompletelyInsideGrid(objCol, objRow, cols, rows) &&
+                !isOverlapping(objCol, objRow, cols, rows, selectedObject)) {
                 obj.put("x", grid.getCellX(objCol));
                 obj.put("y", grid.getCellY(objRow));
+            } else {
+                obj.put("x", initialX);
+                obj.put("y", initialY);
             }
-
+    
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-        
+    
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
-
+    
             mouseDragging = false;
             selectedObject = "";
         }
+    }
+
+    private boolean isCompletelyInsideGrid(int startCol, int startRow, int cols, int rows) {
+        // Verifica si el barco está completamente dentro de los límites del grid
+        return startCol >= 0 && startRow >= 0 &&
+               (startCol + cols) <= grid.getCols() &&
+               (startRow + rows) <= grid.getRows();
+    }
+    
+    
+    // Método para verificar la superposición
+    private boolean isOverlapping(int startCol, int startRow, int cols, int rows, String currentObjectId) {
+        for (String objectId : selectableObjects.keySet()) {
+            if (!objectId.equals(currentObjectId)) {
+                JSONObject otherObj = selectableObjects.get(objectId);
+                
+                // Verificar que 'col' y 'row' existan en el objeto
+                if (!otherObj.has("col") || !otherObj.has("row")) {
+                    continue; // Saltar este objeto si no tiene coordenadas válidas
+                }
+    
+                int otherCol = otherObj.getInt("col");
+                int otherRow = otherObj.getInt("row");
+                int otherCols = otherObj.getInt("cols");
+                int otherRows = otherObj.getInt("rows");
+    
+                // Verificar si alguna de las celdas del barco actual se solapa con las del otro barco
+                for (int col = startCol; col < startCol + cols; col++) {
+                    for (int row = startRow; row < startRow + rows; row++) {
+                        if (col >= otherCol && col < otherCol + otherCols &&
+                            row >= otherRow && row < otherRow + otherRows) {
+                            return true; // Hay superposición
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void setPlayersMousePositions(JSONObject positions) {
@@ -239,7 +295,9 @@ public class CtrlPlay implements Initializable {
         // Draw selectable objects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject selectableObject = selectableObjects.get(objectId);
-            drawSelectableObject(objectId, selectableObject);
+            if (selectableObject.getString("player").equals(clientId)){
+                drawSelectableObject(objectId, selectableObject);
+            }
         }
 
         // Draw mouse circles
