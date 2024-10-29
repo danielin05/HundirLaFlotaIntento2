@@ -20,6 +20,8 @@ public class CtrlPlay implements Initializable {
     private Canvas canvas;
     private GraphicsContext gc;
     private Boolean showFPS = false;
+    private Boolean readyA = false; // Declaramos la variable ready de player A
+    private Boolean readyB = false; // Declaramos la variable ready de player B
 
     private PlayTimer animationTimer;
     private PlayGrid grid;
@@ -54,6 +56,73 @@ public class CtrlPlay implements Initializable {
         animationTimer = new PlayTimer(this::run, this::draw, 0);
         start();
     }
+
+    /*
+    @FXML
+    private void readyButton() {
+        if ("A".equals(clientId)) {
+            readyA = true; // Cambiamos el valor a true cuando el Jugador A presiona el botón
+            System.out.println("Jugador " + clientId + " está listo: " + readyA + " Mientras que " + "B" + " está listo: " + readyB);
+            lockPlayers(); // Método para bloquear la interacción de ambos jugadores
+        } else if ("B".equals(clientId)) {
+            readyB = true; // Cambiamos el valor a true cuando el Jugador B presiona el botón
+            System.out.println("Jugador " + clientId + " está listo: " + readyB + " Mientras que " + "A" + " está listo: " + readyA);
+            lockPlayers(); // Método para bloquear la interacción de ambos jugadores
+        }
+    }
+    */
+@FXML
+private void readyButton() {
+    boolean todosDentroA = true; // Para jugador A
+    boolean todosDentroB = true; // Para jugador B
+
+    // Verificamos los barcos de cada jugador
+    for (String objectId : selectableObjects.keySet()) {
+        JSONObject selectableObject = selectableObjects.get(objectId);
+
+        // Verificar barcos del jugador A
+        if (selectableObject.getString("player").equals("A")) {
+            if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
+                todosDentroA = false; // Hay un barco en su posición inicial
+            }
+        } 
+        
+        // Verificar barcos del jugador B
+        if (selectableObject.getString("player").equals("B")) {
+            if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
+                todosDentroB = false; // Hay un barco en su posición inicial
+            }
+        }
+    }
+
+    // Acciones según el jugador que presiona el botón
+    if ("A".equals(clientId)) {
+        if (todosDentroA) {
+            readyA = true;
+            System.out.println("Cliente A listo");
+            lockPlayers();
+        } else {
+            System.out.println("Cliente A no listo, hay barcos en su posición inicial");
+        }
+    } else if ("B".equals(clientId)) {
+        if (todosDentroB) {
+            readyB = true;
+            System.out.println("Cliente B listo");
+            lockPlayers();
+        } else {
+            System.out.println("Cliente B no listo, hay barcos en su posición inicial");
+        }
+    }
+}
+
+    // Este método puede usarse para bloquear la interacción de los jugadores
+    private void lockPlayers() {
+        canvas.setOnMouseDragged(null);
+        canvas.setOnMouseReleased(null);
+    }
+
 
     // When window changes its size
     public void onSizeChanged() {
@@ -104,58 +173,91 @@ public class CtrlPlay implements Initializable {
     private void onMousePressed(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
-    
+        
         selectedObject = "";
         mouseDragging = false;
     
-
         int col = grid.getCol(mouseX);
         int row = grid.getRow(mouseY);
-
-        
-        System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
-
-        // Verificar si hay un barco del otro cliente en esta casilla
-        for (String objectId : selectableObjects.keySet()) {
-            JSONObject obj = selectableObjects.get(objectId);
-            String player = obj.getString("player");
-
-            // Solo verifica objetos que pertenecen al otro cliente
-            if (!player.equals(this.clientId)) {
-                int objCol = obj.getInt("col");
-                int objRow = obj.getInt("row");
-                int cols = obj.getInt("cols");
-                int rows = obj.getInt("rows");
-
-                // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
-                if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
-                    System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
-                    break;
+    
+        // Verificar si la casilla está dentro de los límites de la cuadrícula
+        if (grid.isPositionInsideGrid(mouseX, mouseY)) {
+            // Imprimir la casilla en la que el cliente ha hecho clic
+            System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
+    
+            // Verificar si hay un barco del otro cliente en esta casilla
+            for (String objectId : selectableObjects.keySet()) {
+                JSONObject obj = selectableObjects.get(objectId);
+    
+                // Asegurarse de que el objeto tenga las propiedades necesarias
+                if (obj.has("player") && obj.has("col") && obj.has("row") && obj.has("cols") && obj.has("rows")) {
+                    String player = obj.getString("player");
+    
+                    // Solo verifica objetos que pertenecen al otro cliente
+                    if (!player.equals(this.clientId)) {
+                        int objCol = obj.getInt("col");
+                        int objRow = obj.getInt("row");
+                        int cols = obj.getInt("cols");
+                        int rows = obj.getInt("rows");
+    
+                        // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
+                        if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
+                            System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
+                            break;
+                        }
+                    }
+                }
+            }
+    
+            // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
+            for (String objectId : selectableObjects.keySet()) {
+                JSONObject obj = selectableObjects.get(objectId);
+                if (obj.has("x") && obj.has("y") && obj.has("cols") && obj.has("rows") && obj.has("initialX") && obj.has("initialY")) {
+                    int objX = obj.getInt("x");
+                    int objY = obj.getInt("y");
+                    int cols = obj.getInt("cols");
+                    int rows = obj.getInt("rows");
+                    initialX = obj.getInt("initialX");
+                    initialY = obj.getInt("initialY");
+    
+                    if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
+                        if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
+                            selectedObject = objectId;
+                            mouseDragging = true;
+                            mouseOffsetX = event.getX() - objX;
+                            mouseOffsetY = event.getY() - objY;
+                            break;
+                        }
+                    }
                 }
             }
         }
-
-        // Iterar sobre selectableObjects
+    
+        
+        // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
         for (String objectId : selectableObjects.keySet()) {
             JSONObject obj = selectableObjects.get(objectId);
-            int objX = obj.getInt("x");
-            int objY = obj.getInt("y");
-            int cols = obj.getInt("cols");
-            int rows = obj.getInt("rows");
-            initialX = obj.getInt("initialX");
-            initialY = obj.getInt("initialY");
-
-            if (isPositionInsideObject(mouseX, mouseY, objX, objY,  cols, rows)) {
-                if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
-                    selectedObject = objectId;
-                    mouseDragging = true;
-                    mouseOffsetX = event.getX() - objX;
-                    mouseOffsetY = event.getY() - objY;
-                    break;
+            if (obj.has("x") && obj.has("y") && obj.has("cols") && obj.has("rows") && obj.has("initialX") && obj.has("initialY")) {
+                int objX = obj.getInt("x");
+                int objY = obj.getInt("y");
+                int cols = obj.getInt("cols");
+                int rows = obj.getInt("rows");
+                initialX = obj.getInt("initialX");
+                initialY = obj.getInt("initialY");
+    
+                if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
+                    if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
+                        selectedObject = objectId;
+                        mouseDragging = true;
+                        mouseOffsetX = event.getX() - objX;
+                        mouseOffsetY = event.getY() - objY;
+                        break;
+                    }
                 }
             }
         }
     }
+    
 
 
     public static void setClientId(String clientId) {

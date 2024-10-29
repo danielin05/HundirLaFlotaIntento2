@@ -23,6 +23,7 @@ public class Main extends Application {
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
+    public Scene scene;
 
     public static void main(String[] args) {
 
@@ -45,7 +46,7 @@ public class Main extends Application {
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
 
-        Scene scene = new Scene(UtilsViews.parentContainer);
+        scene = new Scene(UtilsViews.parentContainer);
         
         stage.setScene(scene);
         stage.onCloseRequestProperty(); // Call close method when closing window

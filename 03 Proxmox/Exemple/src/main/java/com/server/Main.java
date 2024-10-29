@@ -62,6 +62,19 @@ public class Main extends WebSocketServer {
         return availableNames.remove(0);
     }
 
+    private static final Map<String, JSONObject> initialSelectableObjects = new HashMap<>();
+
+    private void resetShipPositions() {
+        // Restablece el estado de `selectableObjects` a su posición inicial
+        selectableObjects.clear();
+        for (String objectId : initialSelectableObjects.keySet()) {
+            selectableObjects.put(objectId, new JSONObject(initialSelectableObjects.get(objectId).toString()));
+        }
+    
+        // Enviar actualización a los clientes
+        sendServerSelectableObjects();
+    }
+
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         String clientName = clients.get(conn);
@@ -69,6 +82,11 @@ public class Main extends WebSocketServer {
         availableNames.add(clientName);
         System.out.println("WebSocket client disconnected: " + clientName);
         sendClientsList();
+
+         // Si no quedan clientes conectados, restablece posiciones de los barcos
+         if (clients.isEmpty()) {
+            resetShipPositions();
+        }
     }
 
     @Override
@@ -281,6 +299,7 @@ public class Main extends WebSocketServer {
         obj0.put("rows", 1);
         obj0.put("player", "A");
         selectableObjects.put(name0, obj0);
+        initialSelectableObjects.put(name0, obj0);
 
         String name1 = "A1";
         JSONObject obj1 = new JSONObject();
@@ -293,6 +312,7 @@ public class Main extends WebSocketServer {
         obj1.put("rows", 1);
         obj1.put("player", "A");
         selectableObjects.put(name1, obj1);
+        initialSelectableObjects.put(name1, obj1);
 
         String name2 = "A2";
         JSONObject obj2 = new JSONObject();
@@ -305,6 +325,7 @@ public class Main extends WebSocketServer {
         obj2.put("rows", 2);
         obj2.put("player", "A");
         selectableObjects.put(name2, obj2);
+        initialSelectableObjects.put(name2, obj2);
 
         String name3 = "A3";
         JSONObject obj3 = new JSONObject();
@@ -317,6 +338,7 @@ public class Main extends WebSocketServer {
         obj3.put("rows", 3);
         obj3.put("player", "A");
         selectableObjects.put(name3, obj3);
+        initialSelectableObjects.put(name3, obj3);
 
         String name4 = "A4";
         JSONObject obj4 = new JSONObject();
@@ -329,6 +351,7 @@ public class Main extends WebSocketServer {
         obj4.put("rows", 5);
         obj4.put("player", "A");
         selectableObjects.put(name4, obj4);
+        initialSelectableObjects.put(name4, obj4);
 
         // Add objects Player2
         String name5 = "B5";
@@ -342,6 +365,7 @@ public class Main extends WebSocketServer {
         obj5.put("rows", 1);
         obj5.put("player", "B");
         selectableObjects.put(name5, obj5);
+        initialSelectableObjects.put(name5, obj5);
 
         String name6 = "B6";
         JSONObject obj6 = new JSONObject();
@@ -354,6 +378,7 @@ public class Main extends WebSocketServer {
         obj6.put("rows", 1);
         obj6.put("player", "B");
         selectableObjects.put(name6, obj6);
+        initialSelectableObjects.put(name6, obj6);
 
         String name7 = "B7";
         JSONObject obj7 = new JSONObject();
@@ -366,6 +391,7 @@ public class Main extends WebSocketServer {
         obj7.put("rows", 2);
         obj7.put("player", "B");
         selectableObjects.put(name7, obj7);
+        initialSelectableObjects.put(name7, obj7);
 
         String name8 = "B8";
         JSONObject obj8 = new JSONObject();
@@ -378,6 +404,7 @@ public class Main extends WebSocketServer {
         obj8.put("rows", 3);
         obj8.put("player", "B");
         selectableObjects.put(name8, obj8);
+        initialSelectableObjects.put(name8, obj8);
 
         String name9 = "B9";
         JSONObject obj9 = new JSONObject();
@@ -390,6 +417,7 @@ public class Main extends WebSocketServer {
         obj9.put("rows", 5);
         obj9.put("player", "B");
         selectableObjects.put(name9, obj9);
+        initialSelectableObjects.put(name9, obj9);
 
 
         try {
