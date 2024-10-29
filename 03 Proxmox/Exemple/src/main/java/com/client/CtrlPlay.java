@@ -204,6 +204,9 @@ private void readyButton() {
                         if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
                             System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
                             break;
+                        }else{
+                            System.out.println("Cliente " + clientId + " ha tocado agua");
+                            break;
                         }
                     }
                 }
