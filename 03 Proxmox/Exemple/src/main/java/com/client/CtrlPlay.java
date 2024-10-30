@@ -14,6 +14,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import static com.server.Main.PLAYER_NAMES;
+
 public class CtrlPlay implements Initializable {
 
     @FXML
@@ -71,34 +73,39 @@ public class CtrlPlay implements Initializable {
         }
     }
     */
+
+    String nameA = PLAYER_NAMES.get(0);
+    String nameB = PLAYER_NAMES.get(1);
 @FXML
 private void readyButton() {
     boolean todosDentroA = true; // Para jugador A
     boolean todosDentroB = true; // Para jugador B
+
 
     // Verificamos los barcos de cada jugador
     for (String objectId : selectableObjects.keySet()) {
         JSONObject selectableObject = selectableObjects.get(objectId);
 
         // Verificar barcos del jugador A
-        if (selectableObject.getString("player").equals("A")) {
+        if (selectableObject.getString("player").equals(nameA)) {
             if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
                 selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
-                todosDentroA = false; // Hay un barco en su posición inicial
+                todosDentroA = false;
+                System.out.println("Cliente " + clientId + " Lee los objetos");
             }
         } 
-        
-        // Verificar barcos del jugador B
-        if (selectableObject.getString("player").equals("B")) {
+        // Verificar barcos del jugador A
+        if (selectableObject.getString("player").equals(nameB)) {
             if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
                 selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
-                todosDentroB = false; // Hay un barco en su posición inicial
+                todosDentroB = false;
+                System.out.println("Cliente " + clientId + " Lee los objetos");
             }
-        }
+        } 
     }
 
     // Acciones según el jugador que presiona el botón
-    if ("A".equals(clientId)) {
+    if (nameA.equals(clientId)) {
         if (todosDentroA) {
             readyA = true;
             System.out.println("Cliente A listo");
@@ -106,7 +113,7 @@ private void readyButton() {
         } else {
             System.out.println("Cliente A no listo, hay barcos en su posición inicial");
         }
-    } else if ("B".equals(clientId)) {
+    } else if (nameB.equals(clientId)) {
         if (todosDentroB) {
             readyB = true;
             System.out.println("Cliente B listo");
@@ -204,14 +211,13 @@ private void readyButton() {
                         if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
                             System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
                             break;
-                        }else{
-                            System.out.println("Cliente " + clientId + " ha tocado agua");
-                            break;
                         }
                     }
                 }
             }
+        }
     
+        
             // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
             for (String objectId : selectableObjects.keySet()) {
                 JSONObject obj = selectableObjects.get(objectId);
@@ -222,7 +228,7 @@ private void readyButton() {
                     int rows = obj.getInt("rows");
                     initialX = obj.getInt("initialX");
                     initialY = obj.getInt("initialY");
-    
+        
                     if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
                         if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
                             selectedObject = objectId;
@@ -235,31 +241,6 @@ private void readyButton() {
                 }
             }
         }
-    
-        
-        // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
-        for (String objectId : selectableObjects.keySet()) {
-            JSONObject obj = selectableObjects.get(objectId);
-            if (obj.has("x") && obj.has("y") && obj.has("cols") && obj.has("rows") && obj.has("initialX") && obj.has("initialY")) {
-                int objX = obj.getInt("x");
-                int objY = obj.getInt("y");
-                int cols = obj.getInt("cols");
-                int rows = obj.getInt("rows");
-                initialX = obj.getInt("initialX");
-                initialY = obj.getInt("initialY");
-    
-                if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
-                    if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
-                        selectedObject = objectId;
-                        mouseDragging = true;
-                        mouseOffsetX = event.getX() - objX;
-                        mouseOffsetY = event.getY() - objY;
-                        break;
-                    }
-                }
-            }
-        }
-    }
     
 
 
@@ -411,7 +392,7 @@ private void readyButton() {
 
             // Comprovar si està dins dels límits de la graella
             if (row >= 0 && col >= 0) {
-                if ("A".equals(clientId)) {
+                if (nameA.equals(clientId)) {
                     gc.setFill(Color.LIGHTBLUE); 
                 } else {
                     gc.setFill(Color.LIGHTGREEN); 
@@ -435,7 +416,7 @@ private void readyButton() {
         // Draw mouse circles
         for (String clientId : clientMousePositions.keySet()) {
             JSONObject position = clientMousePositions.get(clientId);
-            if ("A".equals(clientId)) {
+            if (nameA.equals(clientId)) {
                 gc.setFill(Color.BLUE);
             } else {
                 gc.setFill(Color.GREEN); 
@@ -470,22 +451,12 @@ private void readyButton() {
 
         // Seleccionar un color basat en l'objectId
         Color color;
-        switch (objectId.toLowerCase()) {
-            case "red":
-                color = Color.RED;
-                break;
-            case "blue":
-                color = Color.BLUE;
-                break;
-            case "green":
-                color = Color.GREEN;
-                break;
-            case "yellow":
-                color = Color.YELLOW;
-                break;
-            default:
-                color = Color.GRAY;
-                break;
+        if (selectableObjects.get(objectId).getString("player").equals(nameA)) {
+            color = Color.LIGHTBLUE;
+        }else if (selectableObjects.get(objectId).getString("player").equals(nameB)){
+            color = Color.LIGHTGREEN;
+        }else{
+            color = Color.GRAY;
         }
 
         // Dibuixar el rectangle

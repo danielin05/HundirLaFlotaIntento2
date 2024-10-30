@@ -27,7 +27,7 @@ import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 public class Main extends WebSocketServer {
 
-    private static final List<String> PLAYER_NAMES = Arrays.asList("A", "B");
+    public static final List<String> PLAYER_NAMES = Arrays.asList("Asad", "Bbhfjas");
 
     private Map<WebSocket, String> clients;
     private List<String> availableNames;
@@ -297,7 +297,7 @@ public class Main extends WebSocketServer {
         obj0.put("initialY", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
-        obj0.put("player", "A");
+        obj0.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name0, obj0);
         initialSelectableObjects.put(name0, obj0);
 
@@ -310,7 +310,7 @@ public class Main extends WebSocketServer {
         obj1.put("initialY", 100);
         obj1.put("cols", 3);
         obj1.put("rows", 1);
-        obj1.put("player", "A");
+        obj1.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name1, obj1);
         initialSelectableObjects.put(name1, obj1);
 
@@ -323,7 +323,7 @@ public class Main extends WebSocketServer {
         obj2.put("initialY", 150);
         obj2.put("cols", 1);
         obj2.put("rows", 2);
-        obj2.put("player", "A");
+        obj2.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name2, obj2);
         initialSelectableObjects.put(name2, obj2);
 
@@ -336,7 +336,7 @@ public class Main extends WebSocketServer {
         obj3.put("initialY", 150);
         obj3.put("cols", 1);
         obj3.put("rows", 3);
-        obj3.put("player", "A");
+        obj3.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name3, obj3);
         initialSelectableObjects.put(name3, obj3);
 
@@ -349,7 +349,7 @@ public class Main extends WebSocketServer {
         obj4.put("initialY", 150);
         obj4.put("cols", 1);
         obj4.put("rows", 5);
-        obj4.put("player", "A");
+        obj4.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name4, obj4);
         initialSelectableObjects.put(name4, obj4);
 
@@ -363,7 +363,7 @@ public class Main extends WebSocketServer {
         obj5.put("initialY", 50);
         obj5.put("cols", 4);
         obj5.put("rows", 1);
-        obj5.put("player", "B");
+        obj5.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name5, obj5);
         initialSelectableObjects.put(name5, obj5);
 
@@ -376,7 +376,7 @@ public class Main extends WebSocketServer {
         obj6.put("initialY", 100);
         obj6.put("cols", 3);
         obj6.put("rows", 1);
-        obj6.put("player", "B");
+        obj6.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name6, obj6);
         initialSelectableObjects.put(name6, obj6);
 
@@ -389,7 +389,7 @@ public class Main extends WebSocketServer {
         obj7.put("initialY", 150);
         obj7.put("cols", 1);
         obj7.put("rows", 2);
-        obj7.put("player", "B");
+        obj7.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name7, obj7);
         initialSelectableObjects.put(name7, obj7);
 
@@ -402,7 +402,7 @@ public class Main extends WebSocketServer {
         obj8.put("initialY", 150);
         obj8.put("cols", 1);
         obj8.put("rows", 3);
-        obj8.put("player", "B");
+        obj8.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name8, obj8);
         initialSelectableObjects.put(name8, obj8);
 
@@ -415,7 +415,7 @@ public class Main extends WebSocketServer {
         obj9.put("initialY", 150);
         obj9.put("cols", 1);
         obj9.put("rows", 5);
-        obj9.put("player", "B");
+        obj9.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name9, obj9);
         initialSelectableObjects.put(name9, obj9);
 
