@@ -14,7 +14,12 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+import java.util.ArrayList;
+
+
 import static com.server.Main.PLAYER_NAMES;
+import static com.server.Main.readyStatus;
 
 public class CtrlPlay implements Initializable {
 
@@ -36,6 +41,10 @@ public class CtrlPlay implements Initializable {
     private String selectedObject = "";
     private static String clientId;
 
+    public boolean playersReady = false;
+
+    public String turnoDe;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
@@ -51,6 +60,8 @@ public class CtrlPlay implements Initializable {
         canvas.setOnMouseDragged(this::onMouseDragged);
         canvas.setOnMouseReleased(this::onMouseReleased);
 
+        turnoDe = PLAYER_NAMES.get(0);
+
         // Define grid
         grid = new PlayGrid(25, 25, 25, 10, 10);
 
@@ -59,77 +70,67 @@ public class CtrlPlay implements Initializable {
         start();
     }
 
-    /*
-    @FXML
-    private void readyButton() {
-        if ("A".equals(clientId)) {
-            readyA = true; // Cambiamos el valor a true cuando el Jugador A presiona el botón
-            System.out.println("Jugador " + clientId + " está listo: " + readyA + " Mientras que " + "B" + " está listo: " + readyB);
-            lockPlayers(); // Método para bloquear la interacción de ambos jugadores
-        } else if ("B".equals(clientId)) {
-            readyB = true; // Cambiamos el valor a true cuando el Jugador B presiona el botón
-            System.out.println("Jugador " + clientId + " está listo: " + readyB + " Mientras que " + "A" + " está listo: " + readyA);
-            lockPlayers(); // Método para bloquear la interacción de ambos jugadores
-        }
-    }
-    */
-
     String nameA = PLAYER_NAMES.get(0);
     String nameB = PLAYER_NAMES.get(1);
-@FXML
-private void readyButton() {
-    boolean todosDentroA = true; // Para jugador A
-    boolean todosDentroB = true; // Para jugador B
+    @FXML
+    private void readyButton() {
+        boolean todosDentroA = true; // Para jugador A
+        boolean todosDentroB = true; // Para jugador B
 
 
-    // Verificamos los barcos de cada jugador
-    for (String objectId : selectableObjects.keySet()) {
-        JSONObject selectableObject = selectableObjects.get(objectId);
+        // Verificamos los barcos de cada jugador
+        for (String objectId : selectableObjects.keySet()) {
+            JSONObject selectableObject = selectableObjects.get(objectId);
 
-        // Verificar barcos del jugador A
-        if (selectableObject.getString("player").equals(nameA)) {
-            if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
-                selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
-                todosDentroA = false;
-                System.out.println("Cliente " + clientId + " Lee los objetos");
+            // Verificar barcos del jugador A
+            if (selectableObject.getString("player").equals(nameA)) {
+                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                    selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
+                    todosDentroA = false;
+                }
+            } 
+            // Verificar barcos del jugador A
+            if (selectableObject.getString("player").equals(nameB)) {
+                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                    selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
+                    todosDentroB = false;
+                }
+            } 
+        }
+
+        // Acciones según el jugador que presiona el botón
+        if (nameA.equals(clientId)) {
+            if (todosDentroA) {
+                readyA = true;
+                System.out.println("Cliente A listo");
+                enviarMensajeListoAlServidor();
+                lockPlayers();
+            } else {
+                System.out.println("Cliente A no listo, hay barcos en su posición inicial");
             }
-        } 
-        // Verificar barcos del jugador A
-        if (selectableObject.getString("player").equals(nameB)) {
-            if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
-                selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
-                todosDentroB = false;
-                System.out.println("Cliente " + clientId + " Lee los objetos");
+        } else if (nameB.equals(clientId)) {
+            if (todosDentroB) {
+                readyB = true;
+                System.out.println("Cliente B listo");
+                enviarMensajeListoAlServidor();
+                lockPlayers();
+            } else {
+                System.out.println("Cliente B no listo, hay barcos en su posición inicial");
             }
-        } 
+        }
     }
 
-    // Acciones según el jugador que presiona el botón
-    if (nameA.equals(clientId)) {
-        if (todosDentroA) {
-            readyA = true;
-            System.out.println("Cliente A listo");
-            lockPlayers();
-        } else {
-            System.out.println("Cliente A no listo, hay barcos en su posición inicial");
-        }
-    } else if (nameB.equals(clientId)) {
-        if (todosDentroB) {
-            readyB = true;
-            System.out.println("Cliente B listo");
-            lockPlayers();
-        } else {
-            System.out.println("Cliente B no listo, hay barcos en su posición inicial");
-        }
+    // Método para enviar mensaje de "listo" al servidor en CtrlPlay.java
+    private void enviarMensajeListoAlServidor() {
+        // Envía el mensaje de "listo" al servidor usando el cliente WebSocket
+        Main.wsClient.safeSend(new JSONObject().put("type", "clienteListo").put("clientId", Main.clientId).toString());
     }
-}
 
     // Este método puede usarse para bloquear la interacción de los jugadores
     private void lockPlayers() {
         canvas.setOnMouseDragged(null);
         canvas.setOnMouseReleased(null);
     }
-
 
     // When window changes its size
     public void onSizeChanged() {
@@ -177,21 +178,42 @@ private void readyButton() {
 
 
     private int initialX, initialY;
+    private List<String> clickedCells = new ArrayList<>();
+
     private void onMousePressed(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
-        
+
         selectedObject = "";
         mouseDragging = false;
-    
+        
         int col = grid.getCol(mouseX);
         int row = grid.getRow(mouseY);
-    
+        
         // Verificar si la casilla está dentro de los límites de la cuadrícula
         if (grid.isPositionInsideGrid(mouseX, mouseY)) {
-            // Imprimir la casilla en la que el cliente ha hecho clic
-            System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
+            String cellKey = col + "," + row;
+
+            if (playersReady){
+                // Solo permite clics si es el turno del cliente
+                if (!turnoDe.equals(clientId)) {
+                    System.out.println("No es el turno del cliente, espere su turno.");
+                    return;
+                }
+
+                // Verifica si la casilla ya ha sido clicada
+                if (clickedCells.contains(cellKey)) {
+                    System.out.println("Casilla ya seleccionada: Columna " + col + ", Fila " + row);
+                    return; // Salir si ya está en la lista
+                }
+
+                // Añadir la casilla a la lista y registrar el clic
+                clickedCells.add(cellKey);
+
+                // Imprimir la casilla en la que el cliente ha hecho clic
+                System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
     
+            
             // Verificar si hay un barco del otro cliente en esta casilla
             for (String objectId : selectableObjects.keySet()) {
                 JSONObject obj = selectableObjects.get(objectId);
@@ -215,34 +237,43 @@ private void readyButton() {
                     }
                 }
             }
+            enviarMensajeClicAlServidor(col, row);
         }
+    }
+        // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
+        for (String objectId : selectableObjects.keySet()) {
+            JSONObject obj = selectableObjects.get(objectId);
+            if (obj.has("x") && obj.has("y") && obj.has("cols") && obj.has("rows") && obj.has("initialX") && obj.has("initialY")) {
+                int objX = obj.getInt("x");
+                int objY = obj.getInt("y");
+                int cols = obj.getInt("cols");
+                int rows = obj.getInt("rows");
+                initialX = obj.getInt("initialX");
+                initialY = obj.getInt("initialY");
     
-        
-            // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
-            for (String objectId : selectableObjects.keySet()) {
-                JSONObject obj = selectableObjects.get(objectId);
-                if (obj.has("x") && obj.has("y") && obj.has("cols") && obj.has("rows") && obj.has("initialX") && obj.has("initialY")) {
-                    int objX = obj.getInt("x");
-                    int objY = obj.getInt("y");
-                    int cols = obj.getInt("cols");
-                    int rows = obj.getInt("rows");
-                    initialX = obj.getInt("initialX");
-                    initialY = obj.getInt("initialY");
-        
-                    if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
-                        if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
-                            selectedObject = objectId;
-                            mouseDragging = true;
-                            mouseOffsetX = event.getX() - objX;
-                            mouseOffsetY = event.getY() - objY;
-                            break;
-                        }
+                if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
+                    if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
+                        selectedObject = objectId;
+                        mouseDragging = true;
+                        mouseOffsetX = event.getX() - objX;
+                        mouseOffsetY = event.getY() - objY;
+                        break;
                     }
                 }
             }
         }
+    }
     
+// Método para enviar el clic y solicitar cambio de turno
+    private void enviarMensajeClicAlServidor(int col, int row) {
+        JSONObject msgObj = new JSONObject();
+        msgObj.put("type", "clientClick");
+        msgObj.put("clientId", clientId);
 
+        if (Main.wsClient != null) {
+            Main.wsClient.safeSend(msgObj.toString());
+        }
+    }
 
     public static void setClientId(String clientId) {
         CtrlPlay.clientId = clientId;
@@ -391,7 +422,7 @@ private void readyButton() {
             int row = position.getInt("row");
 
             // Comprovar si està dins dels límits de la graella
-            if (row >= 0 && col >= 0) {
+            if (row >= 0 && col >= 0 && playersReady) {
                 if (nameA.equals(clientId)) {
                     gc.setFill(Color.LIGHTBLUE); 
                 } else {
@@ -414,14 +445,16 @@ private void readyButton() {
         }
 
         // Draw mouse circles
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
-            if (nameA.equals(clientId)) {
-                gc.setFill(Color.BLUE);
-            } else {
-                gc.setFill(Color.GREEN); 
+        if (playersReady) {    
+            for (String clientId : clientMousePositions.keySet()) {
+                JSONObject position = clientMousePositions.get(clientId);
+                if (nameA.equals(clientId)) {
+                    gc.setFill(Color.BLUE);
+                } else if (nameB.equals(clientId)){
+                    gc.setFill(Color.GREEN); 
+                }
+                gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
             }
-            gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
         }
 
         // Draw FPS if needed

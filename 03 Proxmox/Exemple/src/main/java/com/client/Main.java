@@ -15,6 +15,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import static com.server.Main.PLAYER_NAMES;
+
 public class Main extends Application {
 
     public static UtilsWS wsClient;
@@ -133,6 +135,17 @@ public class Main extends Application {
             case "serverSelectableObjects":
                 ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 break;
+            case "playersReady":
+                for(String client : PLAYER_NAMES){
+                    if(client.equals(clientId)){
+                    System.out.println("Todos los jugadores estan listos");
+                    }
+                }
+                ctrlPlay.playersReady = true;
+                break;
+            case "updateTurn":
+                System.out.println(msgObj.getString("turno"));
+                ctrlPlay.turnoDe = msgObj.getString("turno");
         }
     }
 

@@ -27,13 +27,15 @@ import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 public class Main extends WebSocketServer {
 
-    public static final List<String> PLAYER_NAMES = Arrays.asList("Asad", "Bbhfjas");
+    public static final List<String> PLAYER_NAMES = Arrays.asList("A", "B");
 
     private Map<WebSocket, String> clients;
     private List<String> availableNames;
     private Map<String, JSONObject> clientMousePositions = new HashMap<>();
 
     private static Map<String, JSONObject> selectableObjects = new HashMap<>();
+
+    public static  Map<String, Boolean> readyStatus = new HashMap<>();
 
     public Main(InetSocketAddress address) {
         super(address);
@@ -50,6 +52,7 @@ public class Main extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         String clientName = getNextAvailableName();
         clients.put(conn, clientName);
+        readyStatus.put(clientName, false); // Inicializa el estado como no listo
         System.out.println("WebSocket client connected: " + clientName);
         sendClientsList();
         sendCowntdown();
@@ -92,15 +95,25 @@ public class Main extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         JSONObject obj = new JSONObject(message);
-    
-        
         if (obj.has("type")) {
             String type = obj.getString("type");
     
             switch (type) {
+
+                case "clienteListo":
+                    String clientId = obj.getString("clientId");
+                    readyStatus.put(clientId, true);
+                    System.out.println("JUGADOR " + clientId + " LISTO");
+                    boolean playersReady = checkIfBothPlayersReady();
+                    if (playersReady) {
+                        System.out.println("LOS JUGADORES ESTAN LISTOS");
+                        setPlayersReady();
+                    }
+                    break;
+                    
                 case "clientMouseMoving":
                     // Obtenim el clientId del missatge
-                    String clientId = obj.getString("clientId");   
+                    clientId = obj.getString("clientId");   
                     clientMousePositions.put(clientId, obj);
         
                     // Prepara el missatge de tipus 'serverMouseMoving' amb les posicions de tots els clients
@@ -117,10 +130,44 @@ public class Main extends WebSocketServer {
 
                     sendServerSelectableObjects();
                     break;
+                case "clientClick":
+                    clientId = obj.getString("clientId");
+
+                    if(clientId.equals(PLAYER_NAMES.get(0))){
+                        JSONObject rst1 = new JSONObject();
+                        rst1.put("type", "updateTurn");
+                        rst1.put("turno", PLAYER_NAMES.get(1));
+                        broadcastMessage(rst1.toString(), null);
+                    }
+                    else if(clientId.equals(PLAYER_NAMES.get(1))){
+                        JSONObject rst1 = new JSONObject();
+                        rst1.put("type", "updateTurn");
+                        rst1.put("turno", PLAYER_NAMES.get(0));
+                        broadcastMessage(rst1.toString(), null);
+                    }
+                    
             }
         }
     }
    
+    private void setPlayersReady() {
+        JSONObject rst0 = new JSONObject();
+        rst0.put("type", "playersReady");
+        rst0.put("message", "Players Are Ready");
+        broadcastMessage(rst0.toString(), null);
+    }
+
+    private boolean checkIfBothPlayersReady() {
+        System.out.println(readyStatus);
+        boolean playersReady = false;
+        if (readyStatus.get(PLAYER_NAMES.get(0)) == true && readyStatus.get(PLAYER_NAMES.get(1)) == true) {
+            playersReady = true;
+            System.out.println(playersReady);
+        }
+
+        return playersReady;
+    }
+
     private void broadcastMessage(String message, WebSocket sender) {
         for (Map.Entry<WebSocket, String> entry : clients.entrySet()) {
             WebSocket conn = entry.getKey();
