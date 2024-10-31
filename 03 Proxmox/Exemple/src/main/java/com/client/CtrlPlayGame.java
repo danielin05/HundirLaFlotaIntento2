@@ -18,11 +18,12 @@ import javafx.scene.paint.Color;
 import java.util.List;
 import java.util.ArrayList;
 
+import static com.client.CtrlPlay.selectableObjects;
+
 
 import static com.server.Main.PLAYER_NAMES;
-import static com.server.Main.readyStatus;
 
-public class CtrlPlay implements Initializable {
+public class CtrlPlayGame implements Initializable {
 
     @FXML
     private Canvas canvas;
@@ -38,11 +39,10 @@ public class CtrlPlay implements Initializable {
     private Boolean mouseDragging = false;
     private double mouseOffsetX, mouseOffsetY;
 
-    public static Map<String, JSONObject> selectableObjects = new HashMap<>();
     private String selectedObject = "";
     private static String clientId;
 
-    public boolean playersReady = false;
+    public boolean playersReady = true;
 
     public String turnoDe;
 
@@ -64,6 +64,7 @@ public class CtrlPlay implements Initializable {
         canvas.setOnMouseReleased(this::onMouseReleased);
 
         turnoDe = PLAYER_NAMES.get(0);
+        System.out.println(turnoDe);
 
         remainingHits.put(PLAYER_NAMES.get(0), 17);
         remainingHits.put(PLAYER_NAMES.get(1), 17);
@@ -201,6 +202,7 @@ public class CtrlPlay implements Initializable {
             String cellKey = col + "," + row;
 
             if (playersReady){
+
                 // Solo permite clics si es el turno del cliente
                 if (!turnoDe.equals(clientId)) {
                     System.out.println("No es el turno del cliente, espere su turno.");
@@ -291,7 +293,7 @@ public class CtrlPlay implements Initializable {
     }
 
     public static void setClientId(String clientId) {
-        CtrlPlay.clientId = clientId;
+        CtrlPlayGame.clientId = clientId;
     }
 
     private void onMouseDragged(MouseEvent event) {
@@ -392,14 +394,6 @@ public class CtrlPlay implements Initializable {
         }
     }
 
-    public void setSelectableObjects(JSONObject objects) {
-        selectableObjects.clear();
-        for (String objectId : objects.keySet()) {
-            JSONObject positionObject = objects.getJSONObject(objectId);
-            selectableObjects.put(objectId, positionObject);
-        }
-    }
-
     public Boolean isPositionInsideObject(double positionX, double positionY, int objX, int objY, int cols, int rows) {
         double cellSize = grid.getCellSize();
         double objectWidth = cols * cellSize;
@@ -451,14 +445,6 @@ public class CtrlPlay implements Initializable {
         // Draw grid
         drawGrid();
 
-        // Draw selectable objects
-        for (String objectId : selectableObjects.keySet()) {
-            JSONObject selectableObject = selectableObjects.get(objectId);
-            if (selectableObject.getString("player").equals(clientId)){
-                drawSelectableObject(objectId, selectableObject);
-            }
-        }
-
         // Draw mouse circles
         if (playersReady) {    
             for (String clientId : clientMousePositions.keySet()) {
@@ -487,36 +473,5 @@ public class CtrlPlay implements Initializable {
                 gc.strokeRect(x, y, cellSize, cellSize);
             }
         }
-    }
-
-    public void drawSelectableObject(String objectId, JSONObject obj) {
-        double cellSize = grid.getCellSize();
-
-        int x = obj.getInt("x");
-        int y = obj.getInt("y");
-        double width = obj.getInt("cols") * cellSize;
-        double height = obj.getInt("rows") * cellSize;
-
-        // Seleccionar un color basat en l'objectId
-        Color color;
-        if (selectableObjects.get(objectId).getString("player").equals(nameA)) {
-            color = Color.LIGHTBLUE;
-        }else if (selectableObjects.get(objectId).getString("player").equals(nameB)){
-            color = Color.LIGHTGREEN;
-        }else{
-            color = Color.GRAY;
-        }
-
-        // Dibuixar el rectangle
-        gc.setFill(color);
-        gc.fillRect(x, y, width, height);
-
-        // Dibuixar el contorn
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(x, y, width, height);
-
-        // Opcionalment, afegir text (per exemple, l'objectId)
-        gc.setFill(Color.BLACK);
-        gc.fillText(objectId, x + 5, y + 15);
     }
 }

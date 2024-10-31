@@ -25,6 +25,7 @@ public class Main extends Application {
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
+    public static CtrlPlayGame ctrlPlayGame;
     public Scene scene;
 
     public static void main(String[] args) {
@@ -43,10 +44,12 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml"); 
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
+        UtilsViews.addView(getClass(), "ViewPlayGame", "/assets/viewPlayGame.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
+        ctrlPlayGame = (CtrlPlayGame) UtilsViews.getController("ViewPlayGame");
 
         scene = new Scene(UtilsViews.parentContainer);
         
@@ -112,6 +115,7 @@ public class Main extends Application {
                 if (clientId == "") {
                     clientId = msgObj.getString("id");
                     CtrlPlay.setClientId(clientId);  // Asignar el clientId a CtrlPlay
+                    CtrlPlayGame.setClientId(clientId);  // Asignar el clientId a CtrlPlay
                 }
                 if (UtilsViews.getActiveView() != "ViewWait") {
                     UtilsViews.setViewAnimating("ViewWait");
@@ -141,11 +145,14 @@ public class Main extends Application {
                     System.out.println("Todos los jugadores estan listos");
                     }
                 }
-                ctrlPlay.playersReady = true;
+                if (UtilsViews.getActiveView() != "ViewPlayGame") {
+                    UtilsViews.setViewAnimating("ViewPlayGame");
+                }
+                ctrlPlayGame.playersReady = true;
                 break;
             case "updateTurn":
                 System.out.println(msgObj.getString("turno"));
-                ctrlPlay.turnoDe = msgObj.getString("turno");
+                ctrlPlayGame.turnoDe = msgObj.getString("turno");
         }
     }
 

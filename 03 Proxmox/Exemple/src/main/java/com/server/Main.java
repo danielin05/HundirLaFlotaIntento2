@@ -145,10 +145,9 @@ public class Main extends WebSocketServer {
                         rst1.put("turno", PLAYER_NAMES.get(0));
                         broadcastMessage(rst1.toString(), null);
                     }
-                    
+                }
             }
         }
-    }
    
     private void setPlayersReady() {
         JSONObject rst0 = new JSONObject();
