@@ -46,6 +46,8 @@ public class CtrlPlayGame implements Initializable {
 
     public String turnoDe;
 
+    public static boolean hitedShip;
+
     private Map<String, Integer> remainingHits = new HashMap();
 
     @Override
@@ -202,53 +204,62 @@ public class CtrlPlayGame implements Initializable {
             String cellKey = col + "," + row;
 
             if (playersReady){
+                if(remainingHits.get(PLAYER_NAMES.get(0)) != 0 && remainingHits.get(PLAYER_NAMES.get(1)) != 0){
+                    // Solo permite clics si es el turno del cliente
+                    if (!turnoDe.equals(clientId)) {
+                        System.out.println("No es el turno del cliente, espere su turno.");
+                        return;
+                    }
 
-                // Solo permite clics si es el turno del cliente
-                if (!turnoDe.equals(clientId)) {
-                    System.out.println("No es el turno del cliente, espere su turno.");
-                    return;
-                }
+                    // Verifica si la casilla ya ha sido clicada
+                    if (clickedCells.contains(cellKey)) {
+                        System.out.println("Casilla ya seleccionada: Columna " + col + ", Fila " + row);
+                        return; // Salir si ya está en la lista
+                    }
 
-                // Verifica si la casilla ya ha sido clicada
-                if (clickedCells.contains(cellKey)) {
-                    System.out.println("Casilla ya seleccionada: Columna " + col + ", Fila " + row);
-                    return; // Salir si ya está en la lista
-                }
+                    // Añadir la casilla a la lista y registrar el clic
+                    clickedCells.add(cellKey);
 
-                // Añadir la casilla a la lista y registrar el clic
-                clickedCells.add(cellKey);
+                    // Imprimir la casilla en la que el cliente ha hecho clic
+                    System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
+        
+                
+                    // Verificar si hay un barco del otro cliente en esta casilla
+                    for (String objectId : selectableObjects.keySet()) {
+                        JSONObject obj = selectableObjects.get(objectId);
 
-                // Imprimir la casilla en la que el cliente ha hecho clic
-                System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
-    
-            
-                // Verificar si hay un barco del otro cliente en esta casilla
-                for (String objectId : selectableObjects.keySet()) {
-                    JSONObject obj = selectableObjects.get(objectId);
+                        // Asegurarse de que el objeto tenga las propiedades necesarias
+                        if (obj.has("player") && obj.has("col") && obj.has("row") && obj.has("cols") && obj.has("rows")) {
+                            String player = obj.getString("player");
 
-                    // Asegurarse de que el objeto tenga las propiedades necesarias
-                    if (obj.has("player") && obj.has("col") && obj.has("row") && obj.has("cols") && obj.has("rows")) {
-                        String player = obj.getString("player");
+                            // Solo verifica objetos que pertenecen al otro cliente
+                            if (!player.equals(this.clientId)) {
+                                int objCol = obj.getInt("col");
+                                int objRow = obj.getInt("row");
+                                int cols = obj.getInt("cols");
+                                int rows = obj.getInt("rows");
 
-                        // Solo verifica objetos que pertenecen al otro cliente
-                        if (!player.equals(this.clientId)) {
-                            int objCol = obj.getInt("col");
-                            int objRow = obj.getInt("row");
-                            int cols = obj.getInt("cols");
-                            int rows = obj.getInt("rows");
-
-                            // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
-                            if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
-                                System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
-                                pintarCasillaImpacto(col, row); // Pinta la casilla de naranja al impactar
-                                remainingHits.put(clientId, remainingHits.get(clientId) - 1);
-                                System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
-                                break;
+                                // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
+                                if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
+                                    System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
+                                    pintarCasillaImpacto(col, row); // Pinta la casilla de naranja al impactar
+                                    remainingHits.put(clientId, remainingHits.get(clientId) - 1);
+                                    hitedShip = true;
+                                    System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                enviarMensajeClicAlServidor(col, row);
+                    enviarMensajeClicAlServidor(col, row);
+                }/*else{
+                    if (remainingHits.get(PLAYER_NAMES.get(0)) == 0){
+                        enviarMensajeGanadorAlServidor(PLAYER_NAMES.get(0));
+                    }else if (remainingHits.get(PLAYER_NAMES.get(1)) == 0){
+
+                        enviarMensajeGanadorAlServidor(PLAYER_NAMES.get(1));
+                    }
+                }*/
             }
         }
         // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
@@ -285,6 +296,18 @@ public class CtrlPlayGame implements Initializable {
             Main.wsClient.safeSend(msgObj.toString());
         }
     }
+/*
+    // Método para enviar el clic y solicitar cambio de turno
+    private void enviarMensajeGanadorAlServidor(String ganador) {
+        JSONObject msgObj = new JSONObject();
+        msgObj.put("type", "winner");
+        msgObj.put("ganador", ganador);
+
+        if (Main.wsClient != null) {
+            Main.wsClient.safeSend(msgObj.toString());
+        }
+    }
+*/
 
     // Método para pintar la casilla de impacto
     private void pintarCasillaImpacto(int col, int row) {

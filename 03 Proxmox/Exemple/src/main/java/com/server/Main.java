@@ -23,6 +23,9 @@ import java.util.Arrays;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.client.CtrlPlayGame;
+
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 public class Main extends WebSocketServer {
@@ -132,19 +135,39 @@ public class Main extends WebSocketServer {
                     break;
                 case "clientClick":
                     clientId = obj.getString("clientId");
+                    boolean hit = CtrlPlayGame.hitedShip;
+                    System.out.println(hit);
 
                     if(clientId.equals(PLAYER_NAMES.get(0))){
                         JSONObject rst1 = new JSONObject();
                         rst1.put("type", "updateTurn");
-                        rst1.put("turno", PLAYER_NAMES.get(1));
+                        if (hit){
+                            rst1.put("turno", PLAYER_NAMES.get(0)); 
+                        }else{
+                            rst1.put("turno", PLAYER_NAMES.get(1));
+                        }
                         broadcastMessage(rst1.toString(), null);
                     }
                     else if(clientId.equals(PLAYER_NAMES.get(1))){
                         JSONObject rst1 = new JSONObject();
                         rst1.put("type", "updateTurn");
-                        rst1.put("turno", PLAYER_NAMES.get(0));
+                        if (hit){
+                            rst1.put("turno", PLAYER_NAMES.get(1));
+                        }else{
+                            rst1.put("turno", PLAYER_NAMES.get(0));
+                        }
                         broadcastMessage(rst1.toString(), null);
                     }
+                    break;
+                /*
+                case "winner":
+                    System.out.println("El ganador es: --------------");
+                    JSONObject rst2 = new JSONObject();
+                    rst2.put("type", "gameWinner");
+                    rst2.put("playerWinner", "ganador");
+                    broadcastMessage(rst2.toString(), null);
+                    break;
+                */
                 }
             }
         }
@@ -161,7 +184,6 @@ public class Main extends WebSocketServer {
         boolean playersReady = false;
         if (readyStatus.get(PLAYER_NAMES.get(0)) == true && readyStatus.get(PLAYER_NAMES.get(1)) == true) {
             playersReady = true;
-            System.out.println(playersReady);
         }
 
         return playersReady;

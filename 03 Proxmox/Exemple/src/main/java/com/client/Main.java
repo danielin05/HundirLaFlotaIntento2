@@ -26,6 +26,7 @@ public class Main extends Application {
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
     public static CtrlPlayGame ctrlPlayGame;
+    public static CtrlWinner ctrlWinner;
     public Scene scene;
 
     public static void main(String[] args) {
@@ -45,11 +46,13 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
         UtilsViews.addView(getClass(), "ViewPlayGame", "/assets/viewPlayGame.fxml");
+        UtilsViews.addView(getClass(), "ViewWinner", "/assets/viewWinner.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
         ctrlPlayGame = (CtrlPlayGame) UtilsViews.getController("ViewPlayGame");
+        ctrlWinner = (CtrlWinner) UtilsViews.getController("ViewWinner");
 
         scene = new Scene(UtilsViews.parentContainer);
         
@@ -151,8 +154,18 @@ public class Main extends Application {
                 ctrlPlayGame.playersReady = true;
                 break;
             case "updateTurn":
-                System.out.println(msgObj.getString("turno"));
+                System.out.println("Turno de: " + msgObj.getString("turno"));
                 ctrlPlayGame.turnoDe = msgObj.getString("turno");
+            /*
+            case "gameWinner":
+            txt = msgObj.getString("playerWinner");
+            System.out.println("El ganador es: " + txt + " Felicidades!!");
+            ctrlWinner.winner.setText(txt);
+
+            if (UtilsViews.getActiveView() != "ViewWinner") {
+                UtilsViews.setViewAnimating("ViewWinner");
+            }
+             */
         }
     }
 
