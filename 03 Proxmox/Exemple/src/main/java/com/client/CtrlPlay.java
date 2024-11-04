@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javafx.scene.control.Button;
 import org.jline.reader.impl.completer.SystemCompleter;
 import org.json.JSONObject;
 
@@ -24,6 +25,7 @@ import static com.server.Main.readyStatus;
 
 public class CtrlPlay implements Initializable {
 
+    public Button botonListo;
     @FXML
     private Canvas canvas;
     private GraphicsContext gc;
@@ -111,6 +113,7 @@ public class CtrlPlay implements Initializable {
                 System.out.println("Cliente A listo");
                 enviarMensajeListoAlServidor();
                 lockPlayers();
+                botonListo.setDisable(true);
             } else {
                 System.out.println("Cliente A no listo, hay barcos en su posición inicial");
             }
@@ -120,6 +123,7 @@ public class CtrlPlay implements Initializable {
                 System.out.println("Cliente B listo");
                 enviarMensajeListoAlServidor();
                 lockPlayers();
+                botonListo.setDisable(true);
             } else {
                 System.out.println("Cliente B no listo, hay barcos en su posición inicial");
             }

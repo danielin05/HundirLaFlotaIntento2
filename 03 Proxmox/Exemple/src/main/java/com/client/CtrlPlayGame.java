@@ -99,7 +99,7 @@ public class CtrlPlayGame implements Initializable {
                     todosDentroA = false;
                 }
             }
-            // Verificar barcos del jugador A
+            // Verificar barcos del jugador B
             if (selectableObject.getString("player").equals(nameB)) {
                 if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) &&
                     selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
