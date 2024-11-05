@@ -50,6 +50,8 @@ public class CtrlPlayGame implements Initializable {
 
     public boolean playersReady = true;
 
+    private boolean hittedShip;
+
     public String turnoDe;
 
     private Map<String, Integer> remainingHits = new HashMap();
@@ -211,7 +213,7 @@ public class CtrlPlayGame implements Initializable {
 
             if (playersReady){
                 if(remainingHits.get(PLAYER_NAMES.get(0)) != 0 && remainingHits.get(PLAYER_NAMES.get(1)) != 0){
-
+                    hittedShip = false;
                 // Solo permite clics si es el turno del cliente
                 if (!turnoDe.equals(clientId)) {
                     System.out.println("No es el turno del cliente, espere su turno.");
@@ -253,6 +255,7 @@ public class CtrlPlayGame implements Initializable {
                                 paintedCells.add(col + "," + row + "," + "ORANGE");
                                 remainingHits.put(clientId, remainingHits.get(clientId) - 1);
                                 System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
+                                hittedShip = true;
                                 break;
                             }
                         }
@@ -310,6 +313,7 @@ public class CtrlPlayGame implements Initializable {
         msgObj.put("clientId", clientId);
         msgObj.put("remainingHitsA", remainingHits.get(PLAYER_NAMES.get(0)).toString());
         msgObj.put("remainingHitsB", remainingHits.get(PLAYER_NAMES.get(1)).toString());
+        msgObj.put("hitted", hittedShip);
 
         if (Main.wsClient != null) {
             Main.wsClient.safeSend(msgObj.toString());

@@ -133,21 +133,40 @@ public class Main extends WebSocketServer {
                 case "clientClick":
                     clientId = obj.getString("clientId");
 
-                    if(clientId.equals(PLAYER_NAMES.get(0))){
-                        JSONObject rst1 = new JSONObject();
-                        rst1.put("type", "updateTurn");
-                        rst1.put("turno", PLAYER_NAMES.get(1));
-                        rst1.put("remainingHitsA", obj.get("remainingHitsA"));
-                        System.out.println("Los hits restantes de A son: " + obj.get("remainingHitsA"));
-                        broadcastMessage(rst1.toString(), null);
-                    }
-                    else if(clientId.equals(PLAYER_NAMES.get(1))){
-                        JSONObject rst1 = new JSONObject();
-                        rst1.put("type", "updateTurn");
-                        rst1.put("turno", PLAYER_NAMES.get(0));
-                        rst1.put("remainingHitsB", obj.get("remainingHitsB"));
-                        System.out.println("Los hits restantes de B son: " + obj.get("remainingHitsB"));
-                        broadcastMessage(rst1.toString(), null);
+                    if(obj.getBoolean("hitted")){
+                        if(clientId.equals(PLAYER_NAMES.get(0))){
+                            JSONObject rst1 = new JSONObject();
+                            rst1.put("type", "updateTurn");
+                            rst1.put("turno", PLAYER_NAMES.get(0));
+                            rst1.put("remainingHitsA", obj.get("remainingHitsA"));
+                            System.out.println("Los hits restantes de A son: " + obj.get("remainingHitsA"));
+                            broadcastMessage(rst1.toString(), null);
+                        }
+                        else if(clientId.equals(PLAYER_NAMES.get(1))){
+                            JSONObject rst1 = new JSONObject();
+                            rst1.put("type", "updateTurn");
+                            rst1.put("turno", PLAYER_NAMES.get(1));
+                            rst1.put("remainingHitsB", obj.get("remainingHitsB"));
+                            System.out.println("Los hits restantes de B son: " + obj.get("remainingHitsB"));
+                            broadcastMessage(rst1.toString(), null);
+                        }
+                    }else{
+                        if(clientId.equals(PLAYER_NAMES.get(0))){
+                            JSONObject rst1 = new JSONObject();
+                            rst1.put("type", "updateTurn");
+                            rst1.put("turno", PLAYER_NAMES.get(1));
+                            rst1.put("remainingHitsA", obj.get("remainingHitsA"));
+                            System.out.println("Los hits restantes de A son: " + obj.get("remainingHitsA"));
+                            broadcastMessage(rst1.toString(), null);
+                        }
+                        else if(clientId.equals(PLAYER_NAMES.get(1))){
+                            JSONObject rst1 = new JSONObject();
+                            rst1.put("type", "updateTurn");
+                            rst1.put("turno", PLAYER_NAMES.get(0));
+                            rst1.put("remainingHitsB", obj.get("remainingHitsB"));
+                            System.out.println("Los hits restantes de B son: " + obj.get("remainingHitsB"));
+                            broadcastMessage(rst1.toString(), null);
+                        }
                     }
                     break;
                 case "winner":
