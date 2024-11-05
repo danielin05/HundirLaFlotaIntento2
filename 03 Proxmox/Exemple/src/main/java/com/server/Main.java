@@ -323,10 +323,17 @@ public class Main extends WebSocketServer {
 
     public static String askSystemName() {
         StringBuilder resultat = new StringBuilder();
+        String osName = System.getProperty("os.name").toLowerCase();
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("uname", "-r");
+            ProcessBuilder processBuilder;
+            if (osName.contains("win")) {
+                // En Windows
+                processBuilder = new ProcessBuilder("cmd.exe", "/c", "ver");
+            } else {
+                // En sistemas Unix/Linux
+                processBuilder = new ProcessBuilder("uname", "-r");
+            }
             Process process = processBuilder.start();
-
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -335,7 +342,7 @@ public class Main extends WebSocketServer {
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                return "Error: El procés ha finalitzat amb codi " + exitCode;
+                return "Error: El proceso ha finalizado con código " + exitCode;
             }
         } catch (Exception e) {
             e.printStackTrace();

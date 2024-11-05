@@ -95,7 +95,7 @@ public class Main extends Application {
 
     public static void connectToServer() {
 
-        ctrlConfig.txtMessage.setTextFill(Color.BLACK);
+        ctrlConfig.txtMessage.setTextFill(Color.WHITE);
         ctrlConfig.txtMessage.setText("Connecting ...");
     
         pauseDuring(1500, () -> { // Give time to show connecting message ...

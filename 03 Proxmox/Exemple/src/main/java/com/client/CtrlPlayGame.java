@@ -22,6 +22,7 @@ import static com.client.CtrlPlay.selectableObjects;
 
 
 import static com.server.Main.PLAYER_NAMES;
+import static javafx.scene.paint.Color.*;
 
 public class CtrlPlayGame implements Initializable {
 
@@ -49,6 +50,8 @@ public class CtrlPlayGame implements Initializable {
     public static boolean hitedShip;
 
     private Map<String, Integer> remainingHits = new HashMap();
+    private List<String> paintedCells = new ArrayList<>();
+
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -59,7 +62,7 @@ public class CtrlPlayGame implements Initializable {
         // Set listeners
         UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
         UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
-        
+
         canvas.setOnMouseMoved(this::setOnMouseMoved);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseDragged(this::onMouseDragged);
@@ -93,18 +96,18 @@ public class CtrlPlayGame implements Initializable {
 
             // Verificar barcos del jugador A
             if (selectableObject.getString("player").equals(nameA)) {
-                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) &&
                     selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
                     todosDentroA = false;
                 }
-            } 
-            // Verificar barcos del jugador A
+            }
+            // Verificar barcos del jugador B
             if (selectableObject.getString("player").equals(nameB)) {
-                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) && 
+                if (selectableObject.getNumber("x").equals(selectableObject.getNumber("initialX")) &&
                     selectableObject.getNumber("y").equals(selectableObject.getNumber("initialY"))) {
                     todosDentroB = false;
                 }
-            } 
+            }
         }
 
         // Acciones según el jugador que presiona el botón
@@ -167,7 +170,7 @@ public class CtrlPlayGame implements Initializable {
         JSONObject newPosition = new JSONObject();
         newPosition.put("x", mouseX);
         newPosition.put("y", mouseY);
-        if (grid.isPositionInsideGrid(mouseX, mouseY)) {                
+        if (grid.isPositionInsideGrid(mouseX, mouseY)) {
             newPosition.put("col", grid.getCol(mouseX));
             newPosition.put("row", grid.getRow(mouseY));
         } else {
@@ -179,7 +182,7 @@ public class CtrlPlayGame implements Initializable {
         JSONObject msgObj = clientMousePositions.get(Main.clientId);
         msgObj.put("type", "clientMouseMoving");
         msgObj.put("clientId", Main.clientId);
-    
+
         if (Main.wsClient != null) {
             Main.wsClient.safeSend(msgObj.toString());
         }
@@ -195,10 +198,10 @@ public class CtrlPlayGame implements Initializable {
 
         selectedObject = "";
         mouseDragging = false;
-        
+
         int col = grid.getCol(mouseX);
         int row = grid.getRow(mouseY);
-        
+
         // Verificar si la casilla está dentro de los límites de la cuadrícula
         if (grid.isPositionInsideGrid(mouseX, mouseY)) {
             String cellKey = col + "," + row;
@@ -231,6 +234,13 @@ public class CtrlPlayGame implements Initializable {
                         // Asegurarse de que el objeto tenga las propiedades necesarias
                         if (obj.has("player") && obj.has("col") && obj.has("row") && obj.has("cols") && obj.has("rows")) {
                             String player = obj.getString("player");
+                        // Imprimir la casilla en la que el cliente ha hecho clic
+                        System.out.println("Cliente " + clientId + " ha hecho clic en la casilla: Columna " + col + ", Fila " + row);
+                        paintedCells.add(col + "," + row + "," + "BLUE");
+
+                        // Verificar si hay un barco del otro cliente en esta casilla
+                        for (String objectId : selectableObjects.keySet()) {
+                            JSONObject obj = selectableObjects.get(objectId);
 
                             // Solo verifica objetos que pertenecen al otro cliente
                             if (!player.equals(this.clientId)) {
@@ -239,15 +249,30 @@ public class CtrlPlayGame implements Initializable {
                                 int cols = obj.getInt("cols");
                                 int rows = obj.getInt("rows");
 
-                                // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
-                                if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
-                                    System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
-                                    pintarCasillaImpacto(col, row); // Pinta la casilla de naranja al impactar
-                                    remainingHits.put(clientId, remainingHits.get(clientId) - 1);
-                                    hitedShip = true;
-                                    System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
-                                    break;
-                                }
+                            // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
+                            if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
+                                System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
+                                pintarCasillaImpacto(col, row); // Pinta la casilla de naranja al impactar
+                                remainingHits.put(clientId, remainingHits.get(clientId) - 1);
+                                hitedShip = true;
+                                System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
+                                break;
+                            }
+                            // Solo verifica objetos que pertenecen al otro cliente
+                            if (!player.equals(this.clientId)) {
+                                int objCol = obj.getInt("col");
+                                int objRow = obj.getInt("row");
+                                int cols = obj.getInt("cols");
+                                int rows = obj.getInt("rows");
+
+                            // Comprobar si la casilla seleccionada cae dentro del área ocupada por el barco del otro cliente
+                            if (col >= objCol && col < objCol + cols && row >= objRow && row < objRow + rows) {
+                                System.out.println("Cliente " + clientId + " ha hecho clic en una casilla con un barco del cliente " + player);
+                                // Esto hace que se pinte de naranja ya que es un tocado.
+                                paintedCells.add(col + "," + row + "," + "ORANGE");
+                                remainingHits.put(clientId, remainingHits.get(clientId) - 1);
+                                System.out.println("El cliente: " + clientId + " tiene que tocar " + remainingHits.get(clientId) + " veces mas para ganar!");
+                                break;
                             }
                         }
                     }
@@ -272,7 +297,7 @@ public class CtrlPlayGame implements Initializable {
                 int rows = obj.getInt("rows");
                 initialX = obj.getInt("initialX");
                 initialY = obj.getInt("initialY");
-    
+
                 if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
                     if (event.isPrimaryButtonDown() && obj.getString("player").equals(this.clientId)) {
                         selectedObject = objectId;
@@ -285,8 +310,8 @@ public class CtrlPlayGame implements Initializable {
             }
         }
     }
-    
-    // Método para enviar el clic y solicitar cambio de turno
+
+    // Metodo para enviar el clic y solicitar cambio de turno
     private void enviarMensajeClicAlServidor(int col, int row) {
         JSONObject msgObj = new JSONObject();
         msgObj.put("type", "clientClick");
@@ -309,10 +334,15 @@ public class CtrlPlayGame implements Initializable {
     }
 */
 
-    // Método para pintar la casilla de impacto
-    private void pintarCasillaImpacto(int col, int row) {
-        gc.setFill(Color.ORANGE); // Color de impacto
-        gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
+    public void pintarCelda(int col, int row, Color color) {
+        // Calcula las coordenadas en píxeles
+        double x = grid.getCellX(col);
+        double y = grid.getCellY(row);
+        double cellSize = grid.getCellSize();
+
+        // Establece el color de relleno y pinta la celda
+        gc.setFill(color);
+        gc.fillRect(x, y, cellSize, cellSize);
     }
 
     public static void setClientId(String clientId) {
@@ -324,7 +354,7 @@ public class CtrlPlayGame implements Initializable {
             JSONObject obj = selectableObjects.get(selectedObject);
             double objX = event.getX() - mouseOffsetX;
             double objY = event.getY() - mouseOffsetY;
-            
+
             obj.put("x", objX);
             obj.put("y", objY);
             obj.put("col", grid.getCol(objX));
@@ -333,7 +363,7 @@ public class CtrlPlayGame implements Initializable {
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-        
+
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
@@ -348,7 +378,7 @@ public class CtrlPlayGame implements Initializable {
             int objRow = obj.getInt("row");
             int cols = obj.getInt("cols");
             int rows = obj.getInt("rows");
-    
+
             if (isCompletelyInsideGrid(objCol, objRow, cols, rows) &&
                 !isOverlapping(objCol, objRow, cols, rows, selectedObject)) {
                 obj.put("x", grid.getCellX(objCol));
@@ -357,15 +387,15 @@ public class CtrlPlayGame implements Initializable {
                 obj.put("x", initialX);
                 obj.put("y", initialY);
             }
-    
+
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-    
+
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
-    
+
             mouseDragging = false;
             selectedObject = "";
         }
@@ -377,24 +407,24 @@ public class CtrlPlayGame implements Initializable {
                (startCol + cols) <= grid.getCols() &&
                (startRow + rows) <= grid.getRows();
     }
-    
-    
+
+
     // Método para verificar la superposición
     private boolean isOverlapping(int startCol, int startRow, int cols, int rows, String currentObjectId) {
         for (String objectId : selectableObjects.keySet()) {
             if (!objectId.equals(currentObjectId) && selectableObjects.get(objectId).getString("player").equals(clientId)) {
                 JSONObject otherObj = selectableObjects.get(objectId);
-                
+
                 // Verificar que 'col' y 'row' existan en el objeto
                 if (!otherObj.has("col") || !otherObj.has("row")) {
                     continue; // Saltar este objeto si no tiene coordenadas válidas
                 }
-    
+
                 int otherCol = otherObj.getInt("col");
                 int otherRow = otherObj.getInt("row");
                 int otherCols = otherObj.getInt("cols");
                 int otherRows = otherObj.getInt("rows");
-    
+
                 // Verificar si alguna de las celdas del barco actual se solapa con las del otro barco
                 for (int col = startCol; col < startCol + cols; col++) {
                     for (int row = startRow; row < startRow + rows; row++) {
@@ -445,22 +475,21 @@ public class CtrlPlayGame implements Initializable {
         // Clean drawing area
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Draw colored 'over' cells
-
+        // Draw colored 'over' cells (hover effects)
         for (String clientId : clientMousePositions.keySet()) {
             JSONObject position = clientMousePositions.get(clientId);
 
             int col = position.getInt("col");
             int row = position.getInt("row");
 
-            // Comprovar si està dins dels límits de la graella
+            // Check if within grid limits
             if (row >= 0 && col >= 0 && playersReady) {
                 if (nameA.equals(clientId)) {
-                    gc.setFill(Color.LIGHTBLUE); 
+                    gc.setFill(Color.LIGHTBLUE);
                 } else {
-                    gc.setFill(Color.LIGHTGREEN); 
+                    gc.setFill(Color.LIGHTGREEN);
                 }
-                // Emplenar la casella amb el color clar
+                // Fill cell with light color
                 gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
             }
         }
@@ -468,22 +497,46 @@ public class CtrlPlayGame implements Initializable {
         // Draw grid
         drawGrid();
 
+        for (String cell : paintedCells) {
+            String[] parts = cell.split(",");
+            int col = Integer.parseInt(parts[0]);
+            int row = Integer.parseInt(parts[1]);
+            String colorName = parts[2];
+
+            // Convertir el nombre del color a un objeto Color
+            Color color;
+            switch (colorName) {
+                case "ORANGE":
+                    // Tocado
+                    color = Color.ORANGE;
+                    break;
+                case "BLUE":
+                    // Agua
+                    color = Color.LIGHTBLUE;
+                    break;
+                default:
+                    color = Color.WHITE;
+            }
+            pintarCelda(col, row, color);
+        }
+
         // Draw mouse circles
-        if (playersReady) {    
+        if (playersReady) {
             for (String clientId : clientMousePositions.keySet()) {
                 JSONObject position = clientMousePositions.get(clientId);
                 if (nameA.equals(clientId)) {
                     gc.setFill(Color.BLUE);
                 } else if (nameB.equals(clientId)){
-                    gc.setFill(Color.GREEN); 
+                    gc.setFill(Color.GREEN);
                 }
                 gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
             }
         }
 
         // Draw FPS if needed
-        if (showFPS) { animationTimer.drawFPS(gc); }   
+        if (showFPS) { animationTimer.drawFPS(gc); }
     }
+
 
     public void drawGrid() {
         gc.setStroke(Color.BLACK);
