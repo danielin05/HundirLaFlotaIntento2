@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
@@ -32,6 +33,10 @@ public class CtrlPlayGame implements Initializable {
     private Boolean showFPS = false;
     private Boolean readyA = false; // Declaramos la variable ready de player A
     private Boolean readyB = false; // Declaramos la variable ready de player B
+
+    public Label playerTurn;
+    public Label remainingHitsA;
+    public Label remainingHitsB;
 
     private PlayTimer animationTimer;
     private PlayGrid grid;
@@ -69,8 +74,8 @@ public class CtrlPlayGame implements Initializable {
         turnoDe = PLAYER_NAMES.get(0);
         System.out.println(turnoDe);
 
-        remainingHits.put(PLAYER_NAMES.get(0), 17);
-        remainingHits.put(PLAYER_NAMES.get(1), 17);
+        remainingHits.put(PLAYER_NAMES.get(0), 19);
+        remainingHits.put(PLAYER_NAMES.get(1), 19);
 
         // Define grid
         grid = new PlayGrid(25, 25, 25, 10, 10);
@@ -205,6 +210,7 @@ public class CtrlPlayGame implements Initializable {
             String cellKey = col + "," + row;
 
             if (playersReady){
+                if(remainingHits.get(PLAYER_NAMES.get(0)) != 0 && remainingHits.get(PLAYER_NAMES.get(1)) != 0){
 
                 // Solo permite clics si es el turno del cliente
                 if (!turnoDe.equals(clientId)) {
@@ -252,7 +258,14 @@ public class CtrlPlayGame implements Initializable {
                         }
                     }
                 }
-                enviarMensajeClicAlServidor(col, row);
+                enviarMensajeClicAlServidor();
+                }if(remainingHits.get(PLAYER_NAMES.get(0)) == 0 || remainingHits.get(PLAYER_NAMES.get(1)) == 0){
+                    if (remainingHits.get(PLAYER_NAMES.get(0)) == 0){
+                        enviarMensajeGanadorAlServidor(PLAYER_NAMES.get(0).toString());
+                    }else if (remainingHits.get(PLAYER_NAMES.get(1)) == 0){
+                        enviarMensajeGanadorAlServidor(PLAYER_NAMES.get(1).toString());
+                    }
+                }
             }
         }
         // Iterar sobre selectableObjects para detectar si se ha seleccionado un objeto propio
@@ -279,11 +292,24 @@ public class CtrlPlayGame implements Initializable {
         }
     }
 
+    // Método para enviar el ganador al servidor
+    private void enviarMensajeGanadorAlServidor(String ganador) {
+        JSONObject msgObj = new JSONObject();
+        msgObj.put("type", "winner");
+        msgObj.put("ganador", ganador);
+
+        if (Main.wsClient != null) {
+            Main.wsClient.safeSend(msgObj.toString());
+        }
+    }
+
     // Metodo para enviar el clic y solicitar cambio de turno
-    private void enviarMensajeClicAlServidor(int col, int row) {
+    private void enviarMensajeClicAlServidor() {
         JSONObject msgObj = new JSONObject();
         msgObj.put("type", "clientClick");
         msgObj.put("clientId", clientId);
+        msgObj.put("remainingHitsA", remainingHits.get(PLAYER_NAMES.get(0)).toString());
+        msgObj.put("remainingHitsB", remainingHits.get(PLAYER_NAMES.get(1)).toString());
 
         if (Main.wsClient != null) {
             Main.wsClient.safeSend(msgObj.toString());

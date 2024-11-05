@@ -26,6 +26,7 @@ public class Main extends Application {
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
     public static CtrlPlayGame ctrlPlayGame;
+    public static CtrlWinner ctrlWinner;
     public Scene scene;
 
     public static void main(String[] args) {
@@ -45,11 +46,13 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
         UtilsViews.addView(getClass(), "ViewPlayGame", "/assets/viewPlayGame.fxml");
+        UtilsViews.addView(getClass(), "ViewWinner", "/assets/viewWinner.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
         ctrlPlayGame = (CtrlPlayGame) UtilsViews.getController("ViewPlayGame");
+        ctrlWinner = (CtrlWinner) UtilsViews.getController("ViewWinner");
 
         scene = new Scene(UtilsViews.parentContainer);
         
@@ -151,8 +154,25 @@ public class Main extends Application {
                 ctrlPlayGame.playersReady = true;
                 break;
             case "updateTurn":
-                System.out.println(msgObj.getString("turno"));
+
+                if(ctrlPlayGame.playerTurn.getText().equals(PLAYER_NAMES.get(0))){
+                    ctrlPlayGame.remainingHitsA.setText(msgObj.getString("remainingHitsA"));
+                }else if (ctrlPlayGame.playerTurn.getText().equals(PLAYER_NAMES.get(1))){
+                    ctrlPlayGame.remainingHitsB.setText(msgObj.getString("remainingHitsB"));
+                }
+
+                System.out.println("El jugador: " + ctrlPlayGame.playerTurn.getText() + " ha efectuado su turno");
                 ctrlPlayGame.turnoDe = msgObj.getString("turno");
+                ctrlPlayGame.playerTurn.setText(msgObj.getString("turno"));
+                System.out.println("Le toca a: " + ctrlPlayGame.playerTurn.getText());
+                
+                break;
+            case "sendWinner":
+                ctrlWinner.winner.setText(msgObj.getString("gameWinner"));
+
+                if (UtilsViews.getActiveView() != "ViewWinner") {
+                    UtilsViews.setViewAnimating("ViewWinner");
+                }
         }
     }
 

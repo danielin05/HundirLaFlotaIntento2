@@ -137,14 +137,25 @@ public class Main extends WebSocketServer {
                         JSONObject rst1 = new JSONObject();
                         rst1.put("type", "updateTurn");
                         rst1.put("turno", PLAYER_NAMES.get(1));
+                        rst1.put("remainingHitsA", obj.get("remainingHitsA"));
+                        System.out.println("Los hits restantes de A son: " + obj.get("remainingHitsA"));
                         broadcastMessage(rst1.toString(), null);
                     }
                     else if(clientId.equals(PLAYER_NAMES.get(1))){
                         JSONObject rst1 = new JSONObject();
                         rst1.put("type", "updateTurn");
                         rst1.put("turno", PLAYER_NAMES.get(0));
+                        rst1.put("remainingHitsB", obj.get("remainingHitsB"));
+                        System.out.println("Los hits restantes de B son: " + obj.get("remainingHitsB"));
                         broadcastMessage(rst1.toString(), null);
                     }
+                    break;
+                case "winner":
+                    JSONObject rst2 = new JSONObject();
+                    rst2.put("type", "sendWinner");
+                    rst2.put("gameWinner", obj.getString("ganador"));
+                    System.out.println("El ganador es: " + obj.getString("ganador"));
+                    broadcastMessage(rst2.toString(), null);
                 }
             }
         }
@@ -406,71 +417,97 @@ public class Main extends WebSocketServer {
         selectableObjects.put(name4, obj4);
         initialSelectableObjects.put(name4, obj4);
 
-        // Add objects Player2
-        String name5 = "B5";
+        String name5 = "A5";
         JSONObject obj5 = new JSONObject();
         obj5.put("objectId", name5);
-        obj5.put("x", 300);
-        obj5.put("y", 50);
-        obj5.put("initialX", 300);
-        obj5.put("initialY", 50);
-        obj5.put("cols", 4);
+        obj5.put("x", 400);
+        obj5.put("y", 100);
+        obj5.put("initialX", 400);
+        obj5.put("initialY", 100);
+        obj5.put("cols", 2);
         obj5.put("rows", 1);
-        obj5.put("player", PLAYER_NAMES.get(1));
+        obj5.put("player", PLAYER_NAMES.get(0));
         selectableObjects.put(name5, obj5);
         initialSelectableObjects.put(name5, obj5);
 
-        String name6 = "B6";
+        // Add objects Player2
+        String name6 = "B0";
         JSONObject obj6 = new JSONObject();
         obj6.put("objectId", name6);
         obj6.put("x", 300);
-        obj6.put("y", 100);
+        obj6.put("y", 50);
         obj6.put("initialX", 300);
-        obj6.put("initialY", 100);
-        obj6.put("cols", 3);
+        obj6.put("initialY", 50);
+        obj6.put("cols", 4);
         obj6.put("rows", 1);
         obj6.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name6, obj6);
         initialSelectableObjects.put(name6, obj6);
 
-        String name7 = "B7";
+        String name7 = "B1";
         JSONObject obj7 = new JSONObject();
         obj7.put("objectId", name7);
         obj7.put("x", 300);
-        obj7.put("y", 150);
+        obj7.put("y", 100);
         obj7.put("initialX", 300);
-        obj7.put("initialY", 150);
-        obj7.put("cols", 1);
-        obj7.put("rows", 2);
+        obj7.put("initialY", 100);
+        obj7.put("cols", 3);
+        obj7.put("rows", 1);
         obj7.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name7, obj7);
         initialSelectableObjects.put(name7, obj7);
 
-        String name8 = "B8";
+        String name8 = "B2";
         JSONObject obj8 = new JSONObject();
         obj8.put("objectId", name8);
-        obj8.put("x", 350);
+        obj8.put("x", 300);
         obj8.put("y", 150);
-        obj8.put("initialX", 350);
+        obj8.put("initialX", 300);
         obj8.put("initialY", 150);
         obj8.put("cols", 1);
-        obj8.put("rows", 3);
+        obj8.put("rows", 2);
         obj8.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name8, obj8);
         initialSelectableObjects.put(name8, obj8);
 
-        String name9 = "B9";
+        String name9 = "B3";
         JSONObject obj9 = new JSONObject();
         obj9.put("objectId", name9);
-        obj9.put("x", 400);
+        obj9.put("x", 350);
         obj9.put("y", 150);
-        obj9.put("initialX", 400);
+        obj9.put("initialX", 350);
         obj9.put("initialY", 150);
         obj9.put("cols", 1);
-        obj9.put("rows", 5);
+        obj9.put("rows", 3);
         obj9.put("player", PLAYER_NAMES.get(1));
         selectableObjects.put(name9, obj9);
         initialSelectableObjects.put(name9, obj9);
+
+        String name10 = "B4";
+        JSONObject obj10 = new JSONObject();
+        obj10.put("objectId", name10);
+        obj10.put("x", 400);
+        obj10.put("y", 150);
+        obj10.put("initialX", 400);
+        obj10.put("initialY", 150);
+        obj10.put("cols", 1);
+        obj10.put("rows", 5);
+        obj10.put("player", PLAYER_NAMES.get(1));
+        selectableObjects.put(name10, obj10);
+        initialSelectableObjects.put(name10, obj10);
+
+        String name11 = "B5";
+        JSONObject obj11 = new JSONObject();
+        obj11.put("objectId", name11);
+        obj11.put("x", 400);
+        obj11.put("y", 100);
+        obj11.put("initialX", 400);
+        obj11.put("initialY", 100);
+        obj11.put("cols", 2);
+        obj11.put("rows", 1);
+        obj11.put("player", PLAYER_NAMES.get(1));
+        selectableObjects.put(name11, obj11);
+        initialSelectableObjects.put(name11, obj11);
 
 
         try {
